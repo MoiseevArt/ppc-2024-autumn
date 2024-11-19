@@ -22,12 +22,12 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_fixed_values) {
   std::vector<DataType> A = {1, 2, 3, 4, 5, 6};
   std::vector<DataType> B = {7, 8, 9, 10, 11, 12};
   std::vector<DataType> C_par(m * n, 0);
-  std::vector<DataType> C_seq(m * n, 0);
+  std::vector<DataType> C_sq(m * n, 0);
 
   ASSERT_EQ(A.size(), m * k);
   ASSERT_EQ(B.size(), k * n);
   ASSERT_EQ(C_par.size(), m * n);
-  ASSERT_EQ(C_seq.size(), m * n);
+  ASSERT_EQ(C_sq.size(), m * n);
 
   auto taskDataPar = std::make_shared<ppc::core::TaskData>();
   auto taskDataSeq = std::make_shared<ppc::core::TaskData>();
@@ -47,7 +47,7 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_fixed_values) {
     taskDataSeq->inputs_count.emplace_back(k);
     taskDataSeq->inputs_count.emplace_back(n);
 
-    taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t*>(C_seq.data()));
+    taskDataSeq->outputs.emplace_back(reinterpret_cast<uint8_t*>(C_sq.data()));
   }
 
   moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi::MatrixMultiplicationParallel<DataType> taskParallel(taskDataPar);
@@ -65,7 +65,7 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_fixed_values) {
     ASSERT_TRUE(taskSequential.run());
     ASSERT_TRUE(taskSequential.post_processing());
   }
-  EXPECT_EQ(C_par, C_seq);
+  EXPECT_EQ(C_par, C_sq);
 }
 
 TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_negative_fixed_values) {
