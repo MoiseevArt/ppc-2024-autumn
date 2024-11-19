@@ -1,6 +1,5 @@
 #include <boost/mpi/collectives.hpp>
 #include <boost/serialization/vector.hpp>
-#include <cmath>
 
 #include "core/task/include/task.hpp"
 
@@ -42,25 +41,20 @@ class MatrixMultiplicationParallel : public ppc::core::Task {
     return (taskData->inputs.size() == 2 && taskData->inputs_count.size() == 3 && m * k == n * k);
   }
 
-bool run() override {
+  bool run() override {
     internal_order_test();
 
-    // MPI-коммуникатор и параметры ранга
     boost::mpi::communicator world;
     int rank = world.rank();
     int size = world.size();
 
-    // Делим строки матрицы A между процессами
     size_t rows_per_proc = m / size;
     size_t remainder = m % size;
     size_t start_row = rank * rows_per_proc + std::min(static_cast<size_t>(rank), remainder);
     size_t end_row = start_row + rows_per_proc + (rank < remainder ? 1 : 0);
     size_t local_row_count = end_row - start_row;
-
-    //std::cout << "Number of processes: " << world.size() << ", Current process rank: " << rank << "\n";
-
-    // Распределяем строки матрицы A между процессами
     std::vector<DataType> local_A(local_row_count * k);
+
     if (rank == 0) {
       std::vector<int> sendcounts(size), displs(size);
       for (int i = 0; i < size; ++i) {
@@ -70,36 +64,13 @@ bool run() override {
         displs[i] = proc_start_row * k;
       }
       boost::mpi::scatterv(world, A.data(), sendcounts, displs, local_A.data(), local_A.size(), 0);
-
-      // Отладочный вывод матрицы A на главном процессе
-      //std::cout << "Process " << rank << ": Matrix A (global):\n";
-      //for (size_t i = 0; i < m; ++i) {
-      //  for (size_t j = 0; j < k; ++j) {
-      //    std::cout << A[i * k + j] << " ";
-      //  }
-      //  std::cout << "\n";
-      //}
     } else {
-      boost::mpi::scatterv(world, A.data(), {}, {}, local_A.data(), local_A.size(), 0);
+      boost::mpi::scatterv(world, static_cast<DataType*>(nullptr), {}, {}, local_A.data(), local_A.size(), 0);
     }
 
-    // Рассылаем матрицу B всем процессам
     boost::mpi::broadcast(world, B, 0);
-    //if (rank == 0) {
-    //  // Отладочный вывод матрицы B
-    //  std::cout << "Process " << rank << ": Matrix B (global):\n";
-    //  for (size_t i = 0; i < k; ++i) {
-    //    for (size_t j = 0; j < n; ++j) {
-    //      std::cout << B[i * n + j] << " ";
-    //    }
-    //    std::cout << "\n";
-    //  }
-    //}
-
-    // Локальная часть матрицы C
     std::vector<DataType> local_C(local_row_count * n, 0);
 
-    // Вычисление локальной части матрицы C
     for (size_t i = 0; i < local_row_count; ++i) {
       for (size_t j = 0; j < n; ++j) {
         for (size_t p = 0; p < k; ++p) {
@@ -108,23 +79,6 @@ bool run() override {
       }
     }
 
-    // Отладочный вывод локальных данных матрицы A и результата C
-    //std::cout << "Process " << rank << ": Local matrix A:\n";
-    //for (size_t i = 0; i < local_row_count; ++i) {
-    //  for (size_t j = 0; j < k; ++j) {
-    //    std::cout << local_A[i * k + j] << " ";
-    //  }
-    //  std::cout << "\n";
-    //}
-    //std::cout << "Process " << rank << ": Local matrix C:\n";
-    //for (size_t i = 0; i < local_row_count; ++i) {
-    //  for (size_t j = 0; j < n; ++j) {
-    //    std::cout << local_C[i * n + j] << " ";
-    //  }
-    //  std::cout << "\n";
-    //}
-
-    // Сбор локальных частей C на главном процессе
     if (rank == 0) {
       std::vector<int> recvcounts(size), displs(size);
       for (int i = 0; i < size; ++i) {
@@ -134,23 +88,12 @@ bool run() override {
         displs[i] = proc_start_row * n;
       }
       boost::mpi::gatherv(world, local_C.data(), local_C.size(), C.data(), recvcounts, displs, 0);
-
-      // Отладочный вывод глобальной матрицы C
-      //std::cout << "Process " << rank << ": Matrix C (global):\n";
-      //for (size_t i = 0; i < m; ++i) {
-      //  for (size_t j = 0; j < n; ++j) {
-      //    std::cout << C[i * n + j] << " ";
-      //  }
-      //  std::cout << "\n";
-      //}
     } else {
       boost::mpi::gatherv(world, local_C.data(), local_C.size(), C.data(), {}, {}, 0);
     }
 
     return true;
   }
-
-
 
   bool post_processing() override {
     internal_order_test();
@@ -165,7 +108,11 @@ bool run() override {
 
  private:
   std::shared_ptr<ppc::core::TaskData> taskData;
-  std::vector<DataType> A, B, C;
-  size_t m = 0, k = 0, n = 0;
+  std::vector<DataType> A;
+  std::vector<DataType> B;
+  std::vector<DataType> C;
+  size_t m = 0;
+  size_t k = 0;
+  size_t n = 0;
 };
 }  // namespace moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi

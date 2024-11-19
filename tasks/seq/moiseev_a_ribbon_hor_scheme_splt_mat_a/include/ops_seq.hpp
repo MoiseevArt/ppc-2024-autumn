@@ -48,7 +48,6 @@ class MatrixMultiplicationSequential : public ppc::core::Task {
         }
       }
     }
-
     return true;
   }
 
@@ -65,7 +64,11 @@ class MatrixMultiplicationSequential : public ppc::core::Task {
 
  private:
   std::shared_ptr<ppc::core::TaskData> taskData;
-  std::vector<DataType> A, B, C;
-  size_t m = 0, k = 0, n = 0;
+  std::vector<DataType> A;
+  std::vector<DataType> B;
+  std::vector<DataType> C;
+  size_t m = 0;
+  size_t k = 0;
+  size_t n = 0;
 };
 }  // namespace moiseev_a_ribbon_hor_scheme_splt_mat_a_seq
