@@ -15,7 +15,7 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_pipeline_run) {
   const size_t n = 100;
   std::vector<DataType> A(m * k, 1);
   std::vector<DataType> B(k * n, 1);
-  std::vector<DataType> C_par(m * n, 0);
+  std::vector<DataType> C(m * n, 0);
 
   std::shared_ptr<ppc::core::TaskData> taskData = std::make_shared<ppc::core::TaskData>();
 
@@ -25,8 +25,8 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_pipeline_run) {
     taskData->inputs_count.emplace_back(m);
     taskData->inputs_count.emplace_back(k);
     taskData->inputs_count.emplace_back(n);
-    taskData->outputs.emplace_back(reinterpret_cast<uint8_t*>(C_par.data()));
-    taskData->outputs_count.emplace_back(C_par.size());
+    taskData->outputs.emplace_back(reinterpret_cast<uint8_t*>(C.data()));
+    taskData->outputs_count.emplace_back(C.size());
   }
 
   auto task =
@@ -47,7 +47,7 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_pipeline_run) {
 
   if (world.rank() == 0) {
     ppc::core::Perf::print_perf_statistic(perfResults);
-    ASSERT_EQ(C_par.size(), m * n);
+    ASSERT_EQ(C.size(), m * n);
   }
 }
 
@@ -60,7 +60,7 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_task_run) {
   const size_t n = 100;
   std::vector<DataType> A(m * k, 1);
   std::vector<DataType> B(k * n, 1);
-  std::vector<DataType> C_par(m * n, 0);
+  std::vector<DataType> C(m * n, 0);
 
   std::shared_ptr<ppc::core::TaskData> taskData = std::make_shared<ppc::core::TaskData>();
 
@@ -70,8 +70,8 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_task_run) {
     taskData->inputs_count.emplace_back(m);
     taskData->inputs_count.emplace_back(k);
     taskData->inputs_count.emplace_back(n);
-    taskData->outputs.emplace_back(reinterpret_cast<uint8_t*>(C_par.data()));
-    taskData->outputs_count.emplace_back(C_par.size());
+    taskData->outputs.emplace_back(reinterpret_cast<uint8_t*>(C.data()));
+    taskData->outputs_count.emplace_back(C.size());
   }
 
   auto task =
@@ -92,6 +92,6 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_task_run) {
 
   if (world.rank() == 0) {
     ppc::core::Perf::print_perf_statistic(perfResults);
-    ASSERT_EQ(C_par.size(), m * n);
+    ASSERT_EQ(C.size(), m * n);
   }
 }
