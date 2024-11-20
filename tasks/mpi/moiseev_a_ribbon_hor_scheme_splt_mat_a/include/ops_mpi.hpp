@@ -41,7 +41,7 @@ class MatrixMultiplicationParallel : public ppc::core::Task {
     return (taskData->inputs.size() == 2 && taskData->inputs_count.size() == 3 && m * k == n * k);
   }
 
-bool run() override {
+  bool run() override {
     internal_order_test();
 
     boost::mpi::communicator world;
@@ -94,7 +94,6 @@ bool run() override {
 
     return true;
   }
-
 
   bool post_processing() override {
     internal_order_test();
