@@ -64,8 +64,8 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_fixed_values) {
     ASSERT_TRUE(taskSequential.pre_processing());
     ASSERT_TRUE(taskSequential.run());
     ASSERT_TRUE(taskSequential.post_processing());
+    EXPECT_EQ(C_par, C_sq);
   }
-  EXPECT_EQ(C_par, C_sq);
 }
 
 TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_negative_fixed_values) {
@@ -120,8 +120,8 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_negative_fixed_values
     ASSERT_TRUE(taskSequential.pre_processing());
     ASSERT_TRUE(taskSequential.run());
     ASSERT_TRUE(taskSequential.post_processing());
+    EXPECT_EQ(C_par, C_seq);
   }
-  EXPECT_EQ(C_par, C_seq);
 }
 
 TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_random_values) {
@@ -176,8 +176,8 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_random_values) {
     ASSERT_TRUE(taskSequential.pre_processing());
     ASSERT_TRUE(taskSequential.run());
     ASSERT_TRUE(taskSequential.post_processing());
+    EXPECT_EQ(C_par, C_seq);
   }
-  EXPECT_EQ(C_par, C_seq);
 }
 
 TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_float_values) {
@@ -232,8 +232,8 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_float_values) {
     ASSERT_TRUE(taskSequential.pre_processing());
     ASSERT_TRUE(taskSequential.run());
     ASSERT_TRUE(taskSequential.post_processing());
+    EXPECT_EQ(C_par, C_seq);
   }
-  EXPECT_EQ(C_par, C_seq);
 }
 
 TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_zero_matrix) {
@@ -288,8 +288,8 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_zero_matrix) {
     ASSERT_TRUE(taskSequential.pre_processing());
     ASSERT_TRUE(taskSequential.run());
     ASSERT_TRUE(taskSequential.post_processing());
+    EXPECT_EQ(C_par, C_seq);
   }
-  EXPECT_EQ(C_par, C_seq);
 }
 
 TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_double_values) {
@@ -344,6 +344,6 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_double_values) {
     ASSERT_TRUE(taskSequential.pre_processing());
     ASSERT_TRUE(taskSequential.run());
     ASSERT_TRUE(taskSequential.post_processing());
+    EXPECT_EQ(C_par, C_seq);
   }
-  EXPECT_EQ(C_par, C_seq);
 }
