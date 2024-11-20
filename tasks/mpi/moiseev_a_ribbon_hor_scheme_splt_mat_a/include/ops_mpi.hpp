@@ -41,27 +41,27 @@ class MatrixMultiplicationParallel : public ppc::core::Task {
     return (taskData->inputs.size() == 2 && taskData->inputs_count.size() == 3 && m * k == n * k);
   }
 
-  bool run() override {
+bool run() override {
     internal_order_test();
 
     boost::mpi::communicator world;
-    int rank = world.rank();
-    int size = world.size();
+    size_t rank = static_cast<size_t>(world.rank());
+    size_t size = static_cast<size_t>(world.size());
 
     size_t rows_per_proc = m / size;
     size_t remainder = m % size;
-    size_t start_row = rank * rows_per_proc + std::min(static_cast<size_t>(rank), remainder);
+    size_t start_row = rank * rows_per_proc + std::min(rank, remainder);
     size_t end_row = start_row + rows_per_proc + (rank < remainder ? 1 : 0);
     size_t local_row_count = end_row - start_row;
     std::vector<DataType> local_A(local_row_count * k);
 
     if (rank == 0) {
       std::vector<int> sendcounts(size), displs(size);
-      for (int i = 0; i < size; ++i) {
-        size_t proc_start_row = i * rows_per_proc + std::min(static_cast<size_t>(i), remainder);
+      for (size_t i = 0; i < size; ++i) {
+        size_t proc_start_row = i * rows_per_proc + std::min(i, remainder);
         size_t proc_row_count = rows_per_proc + (i < remainder ? 1 : 0);
-        sendcounts[i] = proc_row_count * k;
-        displs[i] = proc_start_row * k;
+        sendcounts[i] = static_cast<int>(proc_row_count * k);
+        displs[i] = static_cast<int>(proc_start_row * k);
       }
       boost::mpi::scatterv(world, A.data(), sendcounts, displs, local_A.data(), local_A.size(), 0);
     } else {
@@ -81,11 +81,11 @@ class MatrixMultiplicationParallel : public ppc::core::Task {
 
     if (rank == 0) {
       std::vector<int> recvcounts(size), displs(size);
-      for (int i = 0; i < size; ++i) {
-        size_t proc_start_row = i * rows_per_proc + std::min(static_cast<size_t>(i), remainder);
+      for (size_t i = 0; i < size; ++i) {
+        size_t proc_start_row = i * rows_per_proc + std::min(i, remainder);
         size_t proc_row_count = rows_per_proc + (i < remainder ? 1 : 0);
-        recvcounts[i] = proc_row_count * n;
-        displs[i] = proc_start_row * n;
+        recvcounts[i] = static_cast<int>(proc_row_count * n);
+        displs[i] = static_cast<int>(proc_start_row * n);
       }
       boost::mpi::gatherv(world, local_C.data(), local_C.size(), C.data(), recvcounts, displs, 0);
     } else {
@@ -94,6 +94,7 @@ class MatrixMultiplicationParallel : public ppc::core::Task {
 
     return true;
   }
+
 
   bool post_processing() override {
     internal_order_test();
