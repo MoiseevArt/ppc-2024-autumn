@@ -14,10 +14,6 @@ class MatrixMultiplicationParallel : public ppc::core::Task {
   bool pre_processing() override {
     internal_order_test();
 
-    if ((taskData->inputs.size() < 2) || taskData->inputs_count.size() != 3) {
-      return false;
-    }
-
     m = taskData->inputs_count[0];
     k = taskData->inputs_count[1];
     n = taskData->inputs_count[2];
@@ -38,21 +34,27 @@ class MatrixMultiplicationParallel : public ppc::core::Task {
 
   bool validation() override {
     internal_order_test();
-    return (taskData->inputs.size() == 2 && taskData->inputs_count.size() == 3 && m * k == n * k);
+    return (world.rank() != 0 ||
+            (taskData->inputs.size() == 2 && taskData->inputs_count.size() == 3 && m * k == n * k));
   }
 
   bool run() override {
     internal_order_test();
 
-    boost::mpi::communicator world;
     size_t rank = static_cast<size_t>(world.rank());
     size_t size = static_cast<size_t>(world.size());
 
     size_t rows_per_proc = m / size;
     size_t remainder = m % size;
+
     size_t start_row = rank * rows_per_proc + std::min(rank, remainder);
     size_t end_row = start_row + rows_per_proc + (rank < remainder ? 1 : 0);
     size_t local_row_count = end_row - start_row;
+
+    boost::mpi::broadcast(world, local_row_count, 0);
+    boost::mpi::broadcast(world, rows_per_proc, 0);
+    boost::mpi::broadcast(world, remainder, 0);
+
     std::vector<DataType> local_A(local_row_count * k);
 
     if (rank == 0) {
@@ -67,8 +69,8 @@ class MatrixMultiplicationParallel : public ppc::core::Task {
     } else {
       boost::mpi::scatterv(world, static_cast<DataType*>(nullptr), {}, {}, local_A.data(), local_A.size(), 0);
     }
-
     boost::mpi::broadcast(world, B, 0);
+
     std::vector<DataType> local_C(local_row_count * n, 0);
 
     for (size_t i = 0; i < local_row_count; ++i) {
@@ -108,6 +110,7 @@ class MatrixMultiplicationParallel : public ppc::core::Task {
 
  private:
   std::shared_ptr<ppc::core::TaskData> taskData;
+  boost::mpi::communicator world;
   std::vector<DataType> A;
   std::vector<DataType> B;
   std::vector<DataType> C;
