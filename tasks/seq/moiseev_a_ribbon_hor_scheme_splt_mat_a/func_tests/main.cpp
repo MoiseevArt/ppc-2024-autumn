@@ -44,7 +44,9 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_seq_test, test_fixed_values) {
 
 TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_seq_test, test_negative_fixed_values) {
   using DataType = int32_t;
-  size_t m = 2, k = 3, n = 2;
+  size_t m = 2;
+  size_t k = 3;
+  size_t n = 2;
   std::vector<DataType> A = {-3, -2, -3, -6, -9, -8};
   std::vector<DataType> B = {-7, -2, -1, -10, -3, -12};
   std::vector<DataType> C(m * n, 0);
@@ -75,7 +77,9 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_seq_test, test_negative_fixed_values
 
 TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_seq_test, test_random_values) {
   using DataType = int32_t;
-  size_t m = 5, k = 4, n = 3;
+  size_t m = 5;
+  size_t k = 4;
+  size_t n = 3;
   std::vector<DataType> A = generateRandomValues<int>(m * k);
   std::vector<DataType> B = generateRandomValues<int>(n * k);
   std::vector<DataType> C(m * n, 0);
@@ -99,7 +103,9 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_seq_test, test_random_values) {
 
 TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_seq_test, test_float_values) {
   using DataType = float;
-  size_t m = 3, k = 3, n = 3;
+  size_t m = 3;
+  size_t k = 3;
+  size_t n = 3;
   std::vector<DataType> A = generateRandomValues<float>(m * k);
   std::vector<DataType> B = generateRandomValues<float>(n * k);
   std::vector<DataType> C(m * n, 0);
@@ -123,7 +129,9 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_seq_test, test_float_values) {
 
 TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_seq_test, test_zero_matrix) {
   using DataType = int32_t;
-  size_t m = 4, k = 4, n = 4;
+  size_t m = 4;
+  size_t k = 4;
+  size_t n = 4;
   std::vector<DataType> A(m * k, 0);
   std::vector<DataType> B(k * n, 0);
   std::vector<DataType> C(m * n, 0);
@@ -149,7 +157,9 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_seq_test, test_zero_matrix) {
 
 TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_seq_test, test_big_mat) {
   using DataType = int32_t;
-  size_t m = 10, k = 7, n = 8;
+  size_t m = 10;
+  size_t k = 7;
+  size_t n = 8;
   std::vector<DataType> A = generateRandomValues<int>(m * k);
   std::vector<DataType> B = generateRandomValues<int>(n * k);
   std::vector<DataType> C(m * n, 0);
@@ -173,7 +183,9 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_seq_test, test_big_mat) {
 
 TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_seq_test, test_double_values) {
   using DataType = double;
-  size_t m = 4, k = 2, n = 3;
+  size_t m = 4;
+  size_t k = 2;
+  size_t n = 3;
   std::vector<DataType> A = generateRandomValues<double>(m * k);
   std::vector<DataType> B = generateRandomValues<double>(n * k);
   std::vector<DataType> C(m * n, 0);
