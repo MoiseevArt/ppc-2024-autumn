@@ -18,8 +18,8 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_fixed_values) {
   MPI_Comm_rank(comm, &rank);
 
   using DataType = int32_t;
-  size_t m = 2, k = 3, n = 2;
-  std::vector<DataType> A = {1, 2, 3, 4, 5, 6};
+  size_t m = 3, k = 3, n = 2;
+  std::vector<DataType> A = {1, 2, 3, 4, 5, 6, 4, 5, 6};
   std::vector<DataType> B = {7, 8, 9, 10, 11, 12};
   std::vector<DataType> C_par(m * n, 0);
   std::vector<DataType> C_sq(m * n, 0);
@@ -130,7 +130,7 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_random_values) {
   MPI_Comm_rank(comm, &rank);
 
   using DataType = int32_t;
-  size_t m = 5, k = 4, n = 3;
+  size_t m = 4, k = 4, n = 3;
   std::vector<DataType> A = generateRandomValues<int>(m * k);
   std::vector<DataType> B = generateRandomValues<int>(n * k);
   std::vector<DataType> C_par(m * n, 0);
