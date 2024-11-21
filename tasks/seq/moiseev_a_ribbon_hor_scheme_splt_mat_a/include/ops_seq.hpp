@@ -54,7 +54,7 @@ class MatrixMultiplicationSequential : public ppc::core::Task {
   bool post_processing() override {
     internal_order_test();
 
-    if (taskData->outputs.size() >= 1) {
+    if (!taskData->outputs.empty()) {
       auto output_ptr = reinterpret_cast<DataType*>(taskData->outputs[0]);
       std::copy(C.begin(), C.end(), output_ptr);
       return true;
