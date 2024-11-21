@@ -11,6 +11,16 @@ class MatrixMultiplicationParallel : public ppc::core::Task {
   explicit MatrixMultiplicationParallel(std::shared_ptr<ppc::core::TaskData> taskData_)
       : Task(taskData_), taskData(taskData_) {}
 
+  static std::vector<size_t> distribute(size_t amount, size_t subject) {
+    const auto avg = amount / subject;
+    const auto ext = amount % subject;
+
+    std::vector<size_t> distr(subject, avg);
+    std::for_each(distr.begin(), distr.begin() + ext, [](auto& e) { ++e; });
+
+    return distr;
+  }
+
   bool pre_processing() override {
     internal_order_test();
 
@@ -32,13 +42,13 @@ class MatrixMultiplicationParallel : public ppc::core::Task {
     }
     C.resize(m * n);
     std::fill(C.begin(), C.end(), 0);
- 
+
     return true;
   }
 
   bool validation() override {
     internal_order_test();
-    
+
     return (world.rank() != 0 ||
             (taskData->inputs.size() == 2 && taskData->inputs_count.size() == 3 && m * k == n * k));
   }
@@ -48,50 +58,41 @@ class MatrixMultiplicationParallel : public ppc::core::Task {
 
     auto rank = static_cast<size_t>(world.rank());
     auto size = static_cast<size_t>(world.size());
-    
-    size_t rows_per_proc = m / size;
-    size_t remainder = m % size;
 
-    size_t start_row = rank * rows_per_proc + std::min(rank, remainder);
-    size_t end_row = start_row + rows_per_proc + (rank < remainder ? 1 : 0);
-    size_t local_row_count = end_row - start_row;
+    std::vector<size_t> distributions = {0};
 
-    boost::mpi::broadcast(world, local_row_count, 0);
-    boost::mpi::broadcast(world, rows_per_proc, 0);
-    boost::mpi::broadcast(world, remainder, 0);
+    if (rank == 0) {
+      distributions = distribute(m, size);
+    }
+
+    boost::mpi::broadcast(world, distributions, 0);
     boost::mpi::broadcast(world, k, 0);
     boost::mpi::broadcast(world, n, 0);
 
-    std::vector<DataType> local_A(local_row_count * k);
+    std::vector<DataType> local_A(distributions[rank] * k);
 
     if (rank == 0) {
+      std::vector<int> sendcounts(size);
+      std::vector<int> displs(size);
 
-      std::vector<int> sendcounts(size), displs(size);
       for (size_t i = 0; i < size; ++i) {
-        size_t proc_start_row = i * rows_per_proc + std::min(i, remainder);
-        size_t proc_row_count = rows_per_proc + (i < remainder ? 1 : 0);
+        size_t proc_start_row = std::accumulate(distributions.begin(), distributions.begin() + i, 0);
+        size_t proc_row_count = distributions[i];
         sendcounts[i] = static_cast<int>(proc_row_count * k);
         displs[i] = static_cast<int>(proc_start_row * k);
-        //std::cout << sendcounts[i] << " " << std::endl;
-        //std::cout << displs[i] << " " << std::endl;
       }
       boost::mpi::scatterv(world, A.data(), sendcounts, displs, local_A.data(), local_A.size(), 0);
     } else {
       boost::mpi::scatterv(world, static_cast<DataType*>(nullptr), {}, {}, local_A.data(), local_A.size(), 0);
-       std::cout << "World#" << world.rank() << std::endl;
-      for (const auto& val : local_A) {
-         std::cout << val << ";";
-       }
-       std::cout << std::endl;
     }
     boost::mpi::broadcast(world, B, 0);
 
-    std::vector<DataType> local_C(local_row_count * n, 0);
+    std::vector<DataType> local_C(distributions[rank] * n, 0);
 
-    for (size_t i = 0; i < local_row_count; ++i) {
+    for (size_t i = 0; i < distributions[rank]; ++i) {
       for (size_t j = 0; j < n; ++j) {
         for (size_t p = 0; p < k; ++p) {
-          local_C[i * n + j] += local_A[i * k + p] * B[p * n + j];         
+          local_C[i * n + j] += local_A[i * k + p] * B[p * n + j];
         }
       }
     }
@@ -100,20 +101,16 @@ class MatrixMultiplicationParallel : public ppc::core::Task {
       std::vector<int> displs(size);
 
       for (size_t i = 0; i < size; ++i) {
-        size_t proc_start_row = i * rows_per_proc + std::min(i, remainder);
-        size_t proc_row_count = rows_per_proc + (i < remainder ? 1 : 0);
+        size_t proc_start_row = std::accumulate(distributions.begin(), distributions.begin() + i, 0);
+        size_t proc_end_row = proc_start_row + distributions[i];
+        size_t proc_row_count = proc_end_row - proc_start_row;
+
         recvcounts[i] = static_cast<int>(proc_row_count * n);
         displs[i] = static_cast<int>(proc_start_row * n);
       }
 
       boost::mpi::gatherv(world, local_C.data(), local_C.size(), C.data(), recvcounts, displs, 0);
     } else {
-      //std::cout << "World#" << world.rank() << std::endl;
-      //for (const auto& val : local_C) {
-      //  std::cout << val << ";";
-      //}
-      //std::cout << std::endl;
-      fprintf(stderr, "World Rank %d\n", world.rank());
       boost::mpi::gatherv(world, local_C.data(), local_C.size(), C.data(), {}, {}, 0);
     }
 
@@ -123,12 +120,11 @@ class MatrixMultiplicationParallel : public ppc::core::Task {
   bool post_processing() override {
     internal_order_test();
 
-    if (taskData->outputs.size() >= 1) {
+    if (world.rank() == 0) {
       auto output_ptr = reinterpret_cast<DataType*>(taskData->outputs[0]);
       std::copy(C.begin(), C.end(), output_ptr);
-      return true;
     }
-    return false;
+    return true;
   }
 
  private:
