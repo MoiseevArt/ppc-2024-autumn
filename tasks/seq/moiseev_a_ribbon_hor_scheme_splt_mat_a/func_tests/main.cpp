@@ -13,7 +13,9 @@ std::vector<DataType> generateRandomValues(int size) {
 
 TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_seq_test, test_fixed_values) {
   using DataType = int32_t;
-  size_t m = 2, k = 3, n = 2;
+  size_t m = 2;
+  size_t k = 3;
+  size_t n = 2;
   std::vector<DataType> A = {1, 2, 3, 4, 5, 6};
   std::vector<DataType> B = {7, 8, 9, 10, 11, 12};
   std::vector<DataType> C(m * n, 0);
