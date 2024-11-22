@@ -40,8 +40,7 @@ class MatrixMultiplicationParallel : public ppc::core::Task {
     if (A.size() != m * k || B.size() != k * n) {
       return false;
     }
-    C.resize(m * n);
-    std::fill(C.begin(), C.end(), 0);
+    C = std::vector<DataType>(m * n, 0);
 
     return true;
   }
