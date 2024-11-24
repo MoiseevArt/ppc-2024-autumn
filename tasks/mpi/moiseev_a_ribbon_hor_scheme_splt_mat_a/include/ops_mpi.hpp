@@ -58,7 +58,7 @@ class MatrixMultiplicationParallel : public ppc::core::Task {
     auto rank = static_cast<size_t>(world.rank());
     auto size = static_cast<size_t>(world.size());
 
-    std::vector<size_t> distributions = {0};
+    std::vector<size_t> distributions;
 
     if (rank == 0) {
       distributions = distribute(m, size);

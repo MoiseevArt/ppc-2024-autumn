@@ -6,6 +6,15 @@
 #include "mpi/moiseev_a_ribbon_hor_scheme_splt_mat_a/include/ops_mpi.hpp"
 #include "seq/moiseev_a_ribbon_hor_scheme_splt_mat_a/include/ops_seq.hpp"
 
+template <typename DataType>
+static std::vector<DataType> generateRandomValues(int size) {
+  std::vector<DataType> vec(size);
+  for (int i = 0; i < size; ++i) {
+    vec[i] = static_cast<DataType>(rand() % 100);
+  }
+  return vec;
+}
+
 TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_pipeline_run) {
   boost::mpi::communicator world;
 
@@ -13,8 +22,8 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_pipeline_run) {
   const size_t m = 100;
   const size_t k = 100;
   const size_t n = 100;
-  std::vector<DataType> A(m * k, 1);
-  std::vector<DataType> B(k * n, 1);
+  std::vector<DataType> A = generateRandomValues<int>(m * k);
+  std::vector<DataType> B = generateRandomValues<int>(n * k);
   std::vector<DataType> C(m * n, 0);
 
   std::shared_ptr<ppc::core::TaskData> taskData = std::make_shared<ppc::core::TaskData>();
@@ -58,8 +67,8 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_task_run) {
   const size_t m = 100;
   const size_t k = 100;
   const size_t n = 100;
-  std::vector<DataType> A(m * k, 1);
-  std::vector<DataType> B(k * n, 1);
+  std::vector<DataType> A = generateRandomValues<int>(m * k);
+  std::vector<DataType> B = generateRandomValues<int>(n * k);
   std::vector<DataType> C(m * n, 0);
 
   std::shared_ptr<ppc::core::TaskData> taskData = std::make_shared<ppc::core::TaskData>();

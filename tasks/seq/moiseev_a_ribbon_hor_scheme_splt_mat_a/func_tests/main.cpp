@@ -3,7 +3,7 @@
 #include "seq/moiseev_a_ribbon_hor_scheme_splt_mat_a/include/ops_seq.hpp"
 
 template <typename DataType>
-std::vector<DataType> generateRandomValues(int size) {
+static std::vector<DataType> generateRandomValues(int size) {
   std::vector<DataType> vec(size);
   for (int i = 0; i < size; ++i) {
     vec[i] = static_cast<DataType>(rand() % 100);

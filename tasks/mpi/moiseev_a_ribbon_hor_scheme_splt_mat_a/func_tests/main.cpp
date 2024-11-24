@@ -4,7 +4,7 @@
 #include "seq/moiseev_a_ribbon_hor_scheme_splt_mat_a/include/ops_seq.hpp"
 
 template <typename DataType>
-std::vector<DataType> generateRandomValues(int size) {
+static std::vector<DataType> generateRandomValues(int size) {
   std::vector<DataType> vec(size);
   for (int i = 0; i < size; ++i) {
     vec[i] = static_cast<DataType>(rand() % 100);
@@ -134,9 +134,9 @@ TEST(moiseev_a_ribbon_hor_scheme_splt_mat_a_mpi_test, test_random_values) {
   MPI_Comm_rank(comm, &rank);
 
   using DataType = int32_t;
-  size_t m = 4;
+  size_t m = 3;
   size_t k = 4;
-  size_t n = 3;
+  size_t n = 2;
   std::vector<DataType> A = generateRandomValues<int>(m * k);
   std::vector<DataType> B = generateRandomValues<int>(n * k);
   std::vector<DataType> C_par(m * n, 0);
