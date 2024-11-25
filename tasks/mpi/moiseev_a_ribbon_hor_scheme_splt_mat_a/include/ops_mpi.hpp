@@ -37,9 +37,6 @@ class MatrixMultiplicationParallel : public ppc::core::Task {
     A.assign(tmp_ptr_A, tmp_ptr_A + m * k);
     B.assign(tmp_ptr_B, tmp_ptr_B + k * n);
 
-    if (A.size() != m * k || B.size() != k * n) {
-      return false;
-    }
     C = std::vector<DataType>(m * n, 0);
 
     return true;
@@ -48,8 +45,9 @@ class MatrixMultiplicationParallel : public ppc::core::Task {
   bool validation() override {
     internal_order_test();
 
-    return (world.rank() != 0 ||
-            (taskData->inputs.size() == 2 && taskData->inputs_count.size() == 3 && m * k == n * k));
+    return (
+        A.size() == m * k && B.size() == k * n &&
+        (world.rank() != 0 || (taskData->inputs.size() == 2 && taskData->inputs_count.size() == 3 && m * k == n * k)));
   }
 
   bool run() override {
